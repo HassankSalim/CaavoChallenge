@@ -1,4 +1,9 @@
 dataset
 *.pyc
 .ipynb_checkpoints/
+include/
+bin/
+lib/
+pip-selfcheck.json
+__pycache__
 
