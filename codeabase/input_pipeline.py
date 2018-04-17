@@ -10,7 +10,7 @@ import pandas as pd
 NUM_CHANNELS = 3
 IMAGE_HEIGHT = 162
 IMAGE_WIDTH = 209
-BATCH_SIZE = 256
+BATCH_SIZE = 128
 ohe = OneHotEncoder()
 ohe.fit(np.arange(15).reshape(-1, 1))
 
