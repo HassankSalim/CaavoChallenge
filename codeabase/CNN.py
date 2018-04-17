@@ -111,8 +111,11 @@ pred = conv_net_vgg7(x, weights, biases, keep_prob)
 cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits = pred, labels = y))
 optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(cost)
 
-correct_pred = tf.equal(tf.argmax(pred, 1), tf.argmax(y, 1))
+pred_arg  = tf.argmax(pred, 1, name = 'result')
+correct_pred = tf.equal(pred_arg, tf.argmax(y, 1))
 accuracy = tf.reduce_mean(tf.cast(correct_pred, tf.float32))
+
+saver = tf.train.Saver()
 
 with tf.Session() as sess:
 
@@ -130,9 +133,14 @@ with tf.Session() as sess:
 
 			sess.run(optimizer, feed_dict={x: data, y: lab, keep_prob: dropout})
 			print('single iter')
-			
-		loss, acc = sess.run([cost, accuracy], feed_dict={ x: data, y: lab, keep_prob: 1. })
 		
+		data, lab = sess.run([test_image_batch, test_label_batch])			
+		data = data.reshape(BATCH_SIZE, 162, 209, 3).astype(np.float32) / 255
+		lab = ohe.transform(lab.reshape(-1, 1)).toarray()
+		loss, acc = sess.run([cost, accuracy], feed_dict={ x: data, y: lab, keep_prob: 1. })
+
+		save_path = saver.save(sess, "../models/result.ckpt")
+			
 		print("Epcohe " + i + ", Minibatch Loss= {:.6f}".format(loss) + ", Training Accuracy = {:.5f}".format(acc))
 
 		print("Optimization Finished!")
