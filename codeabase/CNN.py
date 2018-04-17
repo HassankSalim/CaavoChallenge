@@ -124,7 +124,7 @@ def freeze_graph(model_folder):
 	absolute_model_folder = "/".join(input_checkpoint.split('/')[:-1])
 	output_graph = absolute_model_folder + "/"+ freeze_model_name +".pb"
 
-	output_node_names = "dout,dacc,dpred,output"
+	output_node_names = "result,cpred,acc"
 
 	clear_devices = True
 
@@ -164,7 +164,7 @@ with tf.Session() as sess:
 			lab = ohe.transform(lab.reshape(-1, 1)).toarray()
 
 			sess.run(optimizer, feed_dict={x: data, y: lab, keep_prob: dropout})
-			print('single iter')
+			print('iter step ' + j)
 		
 		data, lab = sess.run([test_image_batch, test_label_batch])			
 		data = data.reshape(BATCH_SIZE, 162, 209, 3).astype(np.float32) / 255
@@ -180,3 +180,5 @@ with tf.Session() as sess:
 	coord.request_stop()
 	coord.join(threads)
 	sess.close()
+
+freeze_graph('../models/')	
