@@ -3,6 +3,7 @@ from input_pipeline import train_image_batch, train_label_batch, test_image_batc
 import numpy as np
 from opencv_utils import showImg
 from sklearn.preprocessing import OneHotEncoder
+from tensorflow.python.framework import graph_util
 
 
 ohe = OneHotEncoder()
@@ -164,7 +165,8 @@ with tf.Session() as sess:
 			lab = ohe.transform(lab.reshape(-1, 1)).toarray()
 
 			sess.run(optimizer, feed_dict={x: data, y: lab, keep_prob: dropout})
-			print('iter step ' + str(j))
+			if j % 50 == 0:
+				print('iter step ' + str(j))
 		
 		data, lab = sess.run([test_image_batch, test_label_batch])			
 		data = data.reshape(BATCH_SIZE, 162, 209, 3).astype(np.float32) / 255
@@ -175,7 +177,7 @@ with tf.Session() as sess:
 
 		print("Epcohe " + str(i) + ", Minibatch Loss= {:.6f}".format(loss) + ", Training Accuracy = {:.5f}".format(acc))
 		freeze_graph('../models/')
-		
+
 	print("Optimization Finished!")
 
 	coord.request_stop()
