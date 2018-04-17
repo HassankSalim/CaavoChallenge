@@ -77,34 +77,34 @@ def maxpool2d(x, k=2):
 	return tf.nn.max_pool(x, ksize=[1, k, k, 1], strides=[1, k, k, 1], padding='SAME')
 
 def conv_net_vgg7(x, weights, biases, dropout):
-    
-        x = tf.reshape(x, shape=[-1, 162, 209, 3])
-        conv1 = conv2d(x, weights['wc1'], biases['bc1'])
-        conv1 = maxpool2d(conv1, 2)
 
-        conv2 = conv2d(conv1, weights['wc2'], biases['bc2'])
-        conv2 = maxpool2d(conv2, 2)
-        
-        conv3 = conv2d(conv2, weights['wc3'], biases['bc3'])
-        conv3 = maxpool2d(conv3, 2)
-        
-        conv4 = conv2d(conv3, weights['wc4'], biases['bc4'])
-        conv4 = maxpool2d(conv4, 2)
-        
-        conv5 = conv2d(conv4, weights['wc5'], biases['bc5'])
-        conv5 = maxpool2d(conv5, 2)
-        
-        conv6 = conv2d(conv5, weights['wc6'], biases['bc6'])
-        conv6 = maxpool2d(conv6, 1)
-        
-        fc1 = tf.reshape(conv6, [-1, weights['wd1'].get_shape().as_list()[0]])
-        fc1 = tf.add(tf.matmul(fc1, weights['wd1']), biases['bd1'])
-        fc1 = tf.nn.relu(fc1)
-        
-        fc1 = tf.nn.dropout(fc1, dropout)
-        out = tf.add(tf.matmul(fc1, weights['out']), biases['out'])
-        
-        return out
+	x = tf.reshape(x, shape=[-1, 162, 209, 3])
+	conv1 = conv2d(x, weights['wc1'], biases['bc1'])
+	conv1 = maxpool2d(conv1, 2)
+
+	conv2 = conv2d(conv1, weights['wc2'], biases['bc2'])
+	conv2 = maxpool2d(conv2, 2)
+
+	conv3 = conv2d(conv2, weights['wc3'], biases['bc3'])
+	conv3 = maxpool2d(conv3, 2)
+
+	conv4 = conv2d(conv3, weights['wc4'], biases['bc4'])
+	conv4 = maxpool2d(conv4, 2)
+
+	conv5 = conv2d(conv4, weights['wc5'], biases['bc5'])
+	conv5 = maxpool2d(conv5, 2)
+
+	conv6 = conv2d(conv5, weights['wc6'], biases['bc6'])
+	conv6 = maxpool2d(conv6, 1)
+
+	fc1 = tf.reshape(conv6, [-1, weights['wd1'].get_shape().as_list()[0]])
+	fc1 = tf.add(tf.matmul(fc1, weights['wd1']), biases['bd1'])
+	fc1 = tf.nn.relu(fc1)
+
+	fc1 = tf.nn.dropout(fc1, dropout)
+	out = tf.add(tf.matmul(fc1, weights['out']), biases['out'])
+
+	return out
 
 pred = conv_net_vgg7(x, weights, biases, keep_prob)
 
@@ -112,8 +112,40 @@ cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits = pred, lab
 optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(cost)
 
 pred_arg  = tf.argmax(pred, 1, name = 'result')
-correct_pred = tf.equal(pred_arg, tf.argmax(y, 1))
-accuracy = tf.reduce_mean(tf.cast(correct_pred, tf.float32))
+correct_pred = tf.equal(pred_arg, tf.argmax(y, 1), name = 'cpred')
+accuracy = tf.reduce_mean(tf.cast(correct_pred, tf.float32), name = 'acc')
+
+def freeze_graph(model_folder):
+	checkpoint = tf.train.get_checkpoint_state(model_folder)
+	input_checkpoint = checkpoint.model_checkpoint_path
+
+	freeze_model_name = input_checkpoint.split('/')[-1].split('.')[0]
+
+	absolute_model_folder = "/".join(input_checkpoint.split('/')[:-1])
+	output_graph = absolute_model_folder + "/"+ freeze_model_name +".pb"
+
+	output_node_names = "dout,dacc,dpred,output"
+
+	clear_devices = True
+
+	saver = tf.train.import_meta_graph(input_checkpoint + '.meta', clear_devices=clear_devices)
+
+	graph = tf.get_default_graph()
+	input_graph_def = graph.as_graph_def()
+
+	with tf.Session() as sess:
+		saver.restore(sess, input_checkpoint)
+
+		output_graph_def = graph_util.convert_variables_to_constants(
+			sess, # The session is used to retrieve the weights
+			input_graph_def, # The graph_def is used to retrieve the nodes
+			output_node_names.split(",") # The output node names are used to select the usefull nodes
+		)
+
+		with tf.gfile.GFile(output_graph, "wb") as f:
+			f.write(output_graph_def.SerializeToString())
+		print("%d ops in the final graph." % len(output_graph_def.node))
+
 
 saver = tf.train.Saver()
 
