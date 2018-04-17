@@ -49,10 +49,10 @@ keep_prob = tf.placeholder(tf.float32)
 
 weights = {
     'wc1': tf.Variable(tf.random_normal([3, 3, 3, 64])),
-    'wc2': tf.Variable(tf.random_normal([3, 3, 64, 128])),
-    'wc3': tf.Variable(tf.random_normal([3, 3, 128, 256])),
+    'wc2': tf.Variable(tf.random_normal([5, 5, 64, 128])),
+    'wc3': tf.Variable(tf.random_normal([5, 5, 128, 256])),
     'wc4': tf.Variable(tf.random_normal([3, 3, 256, 512])),
-    'wc5': tf.Variable(tf.random_normal([3, 3, 512, 512])),
+    'wc5': tf.Variable(tf.random_normal([5, 5, 512, 512])),
     'wc6': tf.Variable(tf.random_normal([3, 3, 512, 512])),
     'wd1': tf.Variable(tf.random_normal([6*7*512, 4096])),
     'out': tf.Variable(tf.random_normal([4096, n_classes]))
