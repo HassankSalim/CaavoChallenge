@@ -164,7 +164,7 @@ with tf.Session() as sess:
 			lab = ohe.transform(lab.reshape(-1, 1)).toarray()
 
 			sess.run(optimizer, feed_dict={x: data, y: lab, keep_prob: dropout})
-			print('iter step ' + j)
+			print('iter step ' + str(j))
 		
 		data, lab = sess.run([test_image_batch, test_label_batch])			
 		data = data.reshape(BATCH_SIZE, 162, 209, 3).astype(np.float32) / 255
@@ -172,10 +172,11 @@ with tf.Session() as sess:
 		loss, acc = sess.run([cost, accuracy], feed_dict={ x: data, y: lab, keep_prob: 1. })
 
 		save_path = saver.save(sess, "../models/result.ckpt")
-			
-		print("Epcohe " + i + ", Minibatch Loss= {:.6f}".format(loss) + ", Training Accuracy = {:.5f}".format(acc))
 
-		print("Optimization Finished!")
+		print("Epcohe " + str(i) + ", Minibatch Loss= {:.6f}".format(loss) + ", Training Accuracy = {:.5f}".format(acc))
+		freeze_graph('../models/')
+		
+	print("Optimization Finished!")
 
 	coord.request_stop()
 	coord.join(threads)
