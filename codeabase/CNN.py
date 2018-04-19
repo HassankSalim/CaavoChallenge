@@ -51,7 +51,7 @@ weights = {
     'wc1': tf.Variable(tf.random_normal([3, 3, 3, 64])),
     'wc2': tf.Variable(tf.random_normal([5, 5, 64, 128])),
     'wc3': tf.Variable(tf.random_normal([5, 5, 128, 256])),
-    'wc4': tf.Variable(tf.random_normal([3, 3, 256, 512])),
+    'wc4': tf.Variable(tf.random_normal([5, 5, 256, 512])),
     'wc5': tf.Variable(tf.random_normal([5, 5, 512, 512])),
     'wc6': tf.Variable(tf.random_normal([3, 3, 512, 512])),
     'wd1': tf.Variable(tf.random_normal([6*7*512, 4096])),
